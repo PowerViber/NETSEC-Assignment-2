@@ -662,5 +662,3 @@ namespace AtmosphericNetwork.Properties
 		public static Settings Default => defaultInstance;
 	}
 }
-You are not using the latest version of the tool, please update.
-Latest version is '10.0.1.8346' (yours is '9.1.0.7988')
